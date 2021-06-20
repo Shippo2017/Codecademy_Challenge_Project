@@ -21,8 +21,8 @@ plt.title("Chocolate")
 plt.show()
 plt.clf()
 
-# The Best Chocolate
 
+# The Best Chocolate
 # Company
 company = []
 company_names = soup.select('.Company')
