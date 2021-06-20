@@ -1,0 +1,95 @@
+/*Quiz Funnel*/
+SELECT *
+FROM survey
+LIMIT 10;
+
+SELECT DISTINCT question, COUNT(question)
+FROM survey
+GROUP BY 1;
+
+/* Home Try-On Funnel */
+/* Examine */
+SELECT *
+FROM quiz
+LIMIT 5;
+
+SELECT *
+FROM home_try_on
+LIMIT 5;
+
+SELECT *
+FROM purchase
+LIMIT 5;
+
+/* Combine Three Tables */
+SELECT DISTINCT q.user_id,
+      h.user_id IS NOT NULL 'is_home_try_on',
+      h.number_of_pairs,
+      q.user_id IS NOT NULL 'is_purchase'
+FROM quiz q
+LEFT JOIN home_try_on h
+  ON q.user_id = h.user_id
+LEFT JOIN purchase p
+  ON h.user_id = p.user_id
+LIMIT 10;
+
+/* No.6 Answers */
+/* Compare quiz-home_try_on and home_try_on-purchase */
+WITH warby_parkers AS (
+  SELECT DISTINCT q.user_id,
+      h.user_id IS NOT NULL 'is_home_try_on',
+      h.number_of_pairs,
+      q.user_id IS NOT NULL 'is_purchase'
+  FROM quiz q
+  LEFT JOIN home_try_on h
+    ON q.user_id = h.user_id
+  LEFT JOIN purchase p
+    ON h.user_id = p.user_id
+)
+SELECT COUNT(*) 'num_quiz',
+      SUM(is_home_try_on) 'num_home_try_on',
+      SUM(is_purchase) 'num_home_try_on'
+FROM warby_parkers;
+
+/* calculate overall conversion rates */
+WITH warby_parkers AS (
+  SELECT DISTINCT q.user_id,
+  h.user_id IS NOT NULL 'is_home_try_on',
+  p.user_id IS NOT NULL 'is_purchase'
+FROM quiz q
+LEFT JOIN home_try_on h
+  ON h.user_id = q.user_id
+LEFT JOIN purchase p
+  ON p.user_id = h.user_id)
+SELECT
+  COUNT (*) 'num_quiz',
+  SUM (is_home_try_on) 'num_home_try_on',
+  SUM (is_purchase) 'num_purchase',
+  ROUND (100.0 * SUM (is_home_try_on) / COUNT (user_id), 2) 'quiz_to_try_%',
+  ROUND (100.0 * SUM (is_purchase) / SUM (is_home_try_on), 2) 'try_to_purchase_%',
+  ROUND (100.0 * SUM (is_purchase) / COUNT (is_home_try_on), 2) 'quiz_to_purchase_%'
+FROM warby_parkers;
+
+/*Purchase rate between 3 pairs and 5 pairs home_try_on*/
+SELECT 
+  DISTINCT h.number_of_pairs 'pairs',
+  COUNT (h.number_of_pairs IS NOT NULL) 'home_try',
+  SUM (p.user_id IS NOT NULL) 'purchase',
+  ROUND (100.0 * SUM (p.user_id IS NOT NULL) / SUM (h.number_of_pairs IS NOT NULL), 2) 'purchase_%'
+FROM home_try_on h
+LEFT JOIN purchase p
+  ON p.user_id = h.user_id
+GROUP BY 1
+ORDER BY 4 DESC;
+
+/* Most result style purchase*/
+SELECT 
+  DISTINCT q.style,
+  COUNT (q.style IS NOT NULL) 'user_choice',
+  SUM (p.style IS NOT NULL) 'user_purchase',
+  ROUND (100.0 * SUM (p.style IS NOT NULL) / SUM (q.style IS NOT NULL), 2) 'purchase_%'
+FROM quiz q
+LEFT JOIN purchase p
+  ON p.user_id = q.user_id
+GROUP BY 1
+ORDER BY 2 DESC;
