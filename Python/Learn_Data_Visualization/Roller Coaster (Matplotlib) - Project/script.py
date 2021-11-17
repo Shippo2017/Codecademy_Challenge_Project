@@ -1,12 +1,14 @@
 # Import internal library
 import codecademylib3
 
-# 1 
+# 1
 # Import necessary libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
+# 2
 # load rankings data
 wood = pd.read_csv('Golden_Ticket_Award_Winners_Wood.csv')
 print(wood.head(2))
@@ -27,7 +29,7 @@ print(wood_year)
 print(wood['Name'].unique())
 print(wood.Park[wood['Name'] == 'El Toro'].unique())
 
-# 2
+# 3
 # Create a function to plot rankings over time for 1 roller coaster
 def coaster_ranking(coaster_name, park_name, material):
     if material == 'wood':
@@ -52,7 +54,7 @@ plt.clf()
 coaster_ranking('El Toro', 'Six Flags Great Adventure', 'wood')
 
 
-# 3
+# 4
 # Create a plot of El Toro ranking over time
 # function to plot rankings over time for 2 roller coasters
 def coaster_2_ranking(coaster1_name, park1_name, coaster2_name, park2_name, material):
@@ -74,7 +76,7 @@ def coaster_2_ranking(coaster1_name, park1_name, coaster2_name, park2_name, mate
 coaster_2_ranking('El Toro', 'Six Flags Great Adventure', 'Boulder Dash', 'Lake Compounce', wood)
 plt.clf()
 
-# 4
+# 5
 # Create a function to plot top n rankings over time
 def top_ranking(ranking_df, n):
     top_n_rankings = ranking_df[ranking_df['Rank'] <= n]
@@ -98,12 +100,26 @@ def top_ranking(ranking_df, n):
 top_ranking(wood, 5)
 plt.clf()
 
-# 5
+# 6
 # load roller coaster data
 roller = pd.read_csv('roller_coasters.csv')
 print(roller.head())
 
-# 6
+# clean data
+# Check null
+print(roller.isnull().sum())
+
+# drop null
+roller = roller.dropna()
+
+# check data
+print(roller.describe())
+
+# select rows which is non-zero
+roller_coaster = roller.loc[(roller.speed != 0) & (roller.height != 0) & (roller.length != 0)]
+print(roller_coaster.describe())
+
+# 7
 # Create a function to plot histogram of column values
 def plot_histogram(coaster_df, column_name):
     plt.hist(coaster_df[column_name].dropna(), normed=True, histtype='step', linewidth=2)
@@ -136,7 +152,7 @@ def plot_histogram_height(coaster_df):
 plot_histogram_height(roller)
 plt.clf()
 
-# 7
+# 8
 # Create a function to plot inversions by coaster at park
 def plot_inversion_by_coaster(coaster_df, park_name):
     park_coasters = coaster_df[coaster_df['park'] == park_name]
@@ -160,7 +176,7 @@ def plot_inversion_by_coaster(coaster_df, park_name):
 plot_inversion_by_coaster(roller, 'Six Flags Magic Mountain')
 plt.clf()
 
-# 8
+# 9
 # Create a function to plot a pie chart of status.operating
 def pie_chart_status(coaster_df):
     operating_coasters = coaster_df[coaster_df['status'] == 'status.operating']
@@ -179,7 +195,7 @@ def pie_chart_status(coaster_df):
 pie_chart_status(roller)
 plt.clf()
 
-# 9
+# 10
 # Create a function to plot scatter of any two columns
 def scatter_plot(coaster_df, column_x, column_y):
     plt.scatter(coaster_df[column_x], coaster_df[column_y])
@@ -205,5 +221,192 @@ scatter_plot_height_speed(roller)
 plt.clf()
 
 
-# Extra (On The Way!!!)
+# Extra
 
+# What roller coaster seating type is most popular? And do different seating types result in higher/faster/longer roller coasters?
+
+# the most popular seating type
+print('The most popular seating type :')
+print(roller_coaster['seating_type'].value_counts()[:10].reset_index())
+
+# Different seating types result in higher/faster/longer in roller coaster
+def plot_seating_type(dataset, column):
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax = sns.barplot(data=dataset, x='seating_type', y=column, palette='bright')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    ax.set_title(f'Different Seating Type vs. {column.title()}', weight='bold')
+    ax.set_xlabel('Seating Type')
+    ax.set_ylabel(column.title())
+    plt.show()
+
+# Seating type vs Speed
+plot_seating_type(roller_coaster, 'speed')
+plt.clf()
+#seating type vs height
+plot_seating_type(roller_coaster, 'height')  
+plt.clf()
+# Seating type vs length
+plot_seating_type(roller_coaster, 'length')
+plt.clf()
+
+
+# Do roller coaster manufacturers have any specialties (do they focus on speed, height, seating type, or inversions)?
+
+# num of manufacturer
+print('Num of manufacturers :')
+print(roller_coaster.manufacturer.nunique())
+
+# 10 manufacturers constructed most roller coaster
+print('Manufacturers constructed the most roller coaster :')
+print(roller_coaster['manufacturer'].value_counts()[:10].reset_index())
+
+# manufacturers have any specialities (on speed and height)
+def plot_manufacturers(dataset, column):
+    manufacturers = dataset[dataset['manufacturer'] == column]
+    speed = manufacturers.speed.values
+    height = manufacturers.height.values
+    
+    fig, ax = plt.subplots(figsize=(10,5))
+    plt.scatter(x=speed, y=height, alpha=0.5)
+    
+    ax.set_title(f'Roller Coaster manufacturer by {column.title()}', weight='bold')
+    ax.set_xlabel('Speed')
+    ax.set_ylabel('Height')
+    plt.show()
+
+# Manufacturer by Vekoma
+plot_manufacturers(roller_coaster, 'Vekoma')
+plt.clf()
+# Manufacturer by Intamin
+plot_manufacturers(roller_coaster, 'Intamin')
+plt.clf()
+# Manufacturer by B&M
+plot_manufacturers(roller_coaster, 'B&M')
+plt.clf()
+
+# manufacturers have any specialities (on seating type and inversions)
+def manufacturer_seating_inversions(dataset, column):
+    
+    manufacturers = dataset[dataset['manufacturer'] == column]
+    
+    # filtered by seating_type dataset
+    seating_types = manufacturers.groupby('seating_type').name.count().reset_index(name='count')
+    
+     # filtered by num_inversions dataset
+    invers_num = manufacturers.groupby('num_inversions').name.count().reset_index(name='count')
+    
+    plt.figure(figsize=(15, 5), dpi=150)
+    
+    # plot a bar chart of the manufacturer's coasters categoried by seating type
+    ax = plt.subplot(1,2,1)
+    # plt.subplots_adjust(wspace=0.2)
+    x = range(len(seating_types['seating_type'].values))
+    ax.bar(x, seating_types['count'], color='cyan') 
+    ax.set_xlabel('Seating Type')
+    ax.set_ylabel('Count')
+    ax.set_xticks(x)
+    ax.set_xticklabels(seating_types['seating_type'], rotation=45)
+    
+    # plot a bar chart of the manufacturer's coasters categoried by inversion numbers
+    ax = plt.subplot(1,2,2)
+    x1 = range(len(invers_num['num_inversions'].values))
+    ax.bar(x1, invers_num['count'], color='magenta') 
+    ax.set_xlabel('Num of Inversions')
+    ax.set_ylabel('Count')
+    ax.set_xticks(x1)
+    ax.set_xticklabels(invers_num['num_inversions'], rotation=15)
+    
+    plt.suptitle(f'Manufacturer by {column.title()}', weight='bold', fontsize=15)
+    plt.show()
+
+# Manufacturer by Vekoma
+manufacturer_seating_inversions(roller_coaster, 'Vekoma')
+plt.clf()
+# Manufacturer by Intamin
+manufacturer_seating_inversions(roller_coaster, 'Intamin')
+plt.clf()
+# Manufacturer by B&M
+manufacturer_seating_inversions(roller_coaster, 'B&M')
+plt.clf()
+
+# Do amusement parks have any specialties?
+
+# check the top 5 parks have most roller coasters
+print('The top 5 parks have most roller coasters :')
+print(roller_coaster['park'].value_counts()[:5].reset_index())
+
+# The highest roller coaster in the park
+print('The highest (meters) roller coaster in the park :')
+print(roller_coaster['height'].max())
+
+# the name of park that has hihgest coaster
+print('Parks where the highest roller coasters are :')
+print(roller_coaster.loc[roller_coaster['height'] == 902.0, 'park'].value_counts().reset_index())
+
+print(roller_coaster[(roller_coaster['height'] == 902)])
+
+# The fastest roller coaster in the park
+print('The fastest (kilometers/hours) roller coaster in the park :')
+print(roller_coaster['speed'].max())
+
+# the name of park that has fastest coaster
+print('Parks where the fastest roller coasters are :')
+print(roller_coaster[(roller_coaster['speed'] == 240)])
+
+# The longest roller coaster
+print('The longest (meters) roller coaster in the park :')
+print(roller_coaster['length'].max())
+
+# the name of park that has longest coaster
+print('Parks where the longest roller coasters are :')
+print(roller_coaster[(roller_coaster['length'] == 2479)])
+
+# park specialities 
+def park_specialities(dataset, column):
+    park_coasters = dataset[dataset['park'] == column]
+    seating_types = park_coasters.groupby('seating_type').name.count().reset_index(name='count')
+    invers_num = park_coasters.groupby('num_inversions').name.count().reset_index(name='count')
+    
+    plt.figure(figsize=(13, 5), dpi=150)
+    
+    # plot a scatter of park specialities (height and speed)
+    ax3 = plt.subplot(2,1,1)
+    plt.subplots_adjust(hspace=0.5)
+    speed = park_coasters.speed.values
+    height = park_coasters.height.values
+    
+    ax3.scatter(speed, height, alpha=0.4, color='magenta') 
+    ax3.set_xlabel('Speed')
+    ax3.set_ylabel('Height')
+  
+    
+    # plot a bar graph of park specialities (height and speed)
+    ax = plt.subplot(2,2,3)
+    x = range(len(seating_types['seating_type'].values))
+    ax.bar(x, seating_types['count'], color='cyan') 
+    ax.set_xlabel('Seating Type')
+    ax.set_ylabel('Count')
+    ax.set_xticks(x)
+    ax.set_xticklabels(seating_types['seating_type'], rotation=45)
+    
+    # plot a bar chart of the manufacturer's coasters categoried by inversion numbers
+    ax2 = plt.subplot(2,2,4)
+    x1 = range(len(invers_num['num_inversions'].values))
+    ax2.bar(x1, invers_num['count'], color='magenta') 
+    ax2.set_xlabel('Num of Inversions')
+    ax2.set_ylabel('Count')
+    ax2.set_xticks(x1)
+    ax2.set_xticklabels(invers_num['num_inversions'], rotation=15)
+    
+    plt.suptitle(f'Amusent Park {column.title()}', weight='bold', fontsize=15)
+    plt.show()
+
+# Six Flags Magic Mountain Park
+park_specialities(roller_coaster, 'Six Flags Magic Mountain')
+plt.clf()
+# Foire Park
+park_specialities(roller_coaster, 'Foire')
+plt.clf()
+# Cedar Point Park
+park_specialities(roller_coaster, 'Cedar Point')
+plt.clf()
