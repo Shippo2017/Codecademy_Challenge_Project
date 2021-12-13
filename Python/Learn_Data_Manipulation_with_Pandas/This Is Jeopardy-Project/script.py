@@ -1,53 +1,48 @@
-import re
 import pandas as pd
 pd.set_option('display.max_colwidth', -1)
 pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 
-jeopardy_data = pd.read_csv('jeopardy.csv')
-# print(jeopardy_data.head())
+df = pd.read_csv('jeopardy.csv')
+print(df.head())
+print(df.iloc[100])
+print(df.columns)
 
-# print(jeopardy_data.columns)
+# rename columns
+df = df.rename(columns = {"Show Number": "show_num",
+                          " Air Date": "air_date", 
+                          " Round" : "round", 
+                          " Category": "category", 
+                          " Value": "value", 
+                          " Question":"question", 
+                          " Answer": "answer"})
+print(df.columns)
 
-# Rename Columns
-jeopardy_data.rename(columns={
-  'Show Number': 'show_num', 
-  ' Air Date': 'show_date', 
-  ' Round': 'round', 
-  ' Category': 'category', 
-  ' Value': 'value',
-  ' Question': 'question', 
-  ' Answer': 'answer'
-}, inplace=True)
-print(jeopardy_data.columns)
-
-# Lower Category
-jeopardy_data['category'] = jeopardy_data['category'].apply(lambda x: x.lower())
-# print(jeopardy_data['category'].head())
-
-# No.3
+# filtering a dataset by a list of words
 def filter_data(data, words):
-  filter = lambda x: all(word.lower() in x.lower() for word in words)
-  return data.loc[data['question'].apply(filter)]
+    filter = lambda x : all(word.lower() in x.lower() for word in words)
+    return data.loc[data['question'].apply(filter)]
 
-# No.4
-filtered = filter_data(jeopardy_data, ['King', 'England'])
-print(filtered['question'])
-print(len(filtered['question']))
+# testing the filter function
+filtered = filter_data(df, ['king'])
+print('num of questions that contain those words : ', len(filtered['question']))
 
-# Clean up HTLM version 'question'
-jeopardy_data['question'] = jeopardy_data['question'].apply(lambda x: re.sub(r'<[^<>*]>', '', x))
+# andding new column. clean the value count $ and None
+df['float_value'] = df['value'].apply(lambda x: float(x[1:].replace(",","")) if x != "None" else 0)
+print(df['float_value'].unique())
 
-# no.5
-jeopardy_data['value'] = jeopardy_data['value'].apply(lambda x: float(x[1:].replace(',','')) if x != 'None' else 0)
-print(jeopardy_data['value'].unique)
+# mean float value
+print('The average value is ', df['float_value'].mean())
 
-jeopardy_mean = jeopardy_data['value'].mean()
-print(jeopardy_mean)
+# filtering the dataset and finding the average value of those questions
+filtered = filter_data(df, ['king', 'england'])
+print('the average value of those questions is ',filtered['float_value'].mean())
 
-# no.6
-def get_answer_counts(data):
-  return data['answer'].value_counts()
+# a function to find the unique answers of a set of data
+def answer_count(data):
+    return data['answer'].value_counts()
 
-print(get_answer_counts(filtered))
+# testing the function
+print(answer_count(filtered))
 
-# Extension (not yet)
+# extention
