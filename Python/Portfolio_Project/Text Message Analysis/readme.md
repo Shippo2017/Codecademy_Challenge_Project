@@ -1,4 +1,4 @@
-# Natural Language Processing: Portfolio Project
+# Natural Language Processing Portfolio Project
 
 For this project, you will be analyzing text message data using Natural Language Processing techniques and libraries.
 
