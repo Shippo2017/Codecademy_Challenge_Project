@@ -1,7 +1,8 @@
-# Introduction to Flask : Adopt a Pet(Project)
+# BUILD YOUR FIRST FLASK APP
 
-Imagine you are looking to add a new furry friend to your family! On the pet adoption website, you browse through the categories of animals and select the one you’re interested in, which brings you to another page that contains a list of available pets. Then, you continue your search by further clicking on an individual pet to view its profile page.
+### Introduction
+Flask is a popular Python framework for developing web applications. Classified as a microframework, it comes with minimal built-in components and requirements, making it easy to get started and flexible to use. At the same time, Flask is by no means limited in its ability to produce a fully featured app. Rather, it is designed to be easily extensible, and the developer has the liberty to choose which tools and libraries they want to utilize. As such, Flask is capable of creating both simple static websites as well as more complex apps that involve database integration, accounts and authentication, and more!
 
-Every time you navigate to a different webpage, your browser is making a request to the web server. Thanks to routing, the server knows exactly which endpoint should handle the request and can return the correct HTML page to display.
+In this lesson, we’ll start by looking at an example of a minimal Flask application. It will display the text, Hello, World! on the webpage. 
 
-In this project, you’ll use Python’s Flask framework to create a simple pet adoption site that contains multiple routes.
+You’ll learn how to create this and build on top of it in the following exercises.
