@@ -1,0 +1,63 @@
+---
+title: "Standard Deviation"
+output: html_notebook
+---
+```{r message=FALSE, warning=FALSE, error=TRUE}
+library(readr)
+library(dplyr)
+```
+
+```{r error=TRUE}
+load("project.Rda")
+```
+
+```{r error=TRUE}
+# Change these variables to be the standard deviation of each dataset.
+# Inspect Data
+# head(london_data)
+nrow(london_data)
+
+# Variance and SD for the year
+variance <- function(x) mean((x-mean(x))^2)
+
+#Inspect once again
+head(london_data)
+
+# Get monthly temperature average
+one_column <- london_data$TemperatureC
+
+average_temp <- mean(one_column)
+temperature_var <- variance (one_column)
+temperature_standard_deviation <- sd(one_column)
+
+print(paste("The mean of TemperatureC is", round(average_temp, digits=2)))
+
+print(paste("The variance of TemperatureC is", temperature_var))
+
+print(paste("The standard deviation of TemperatureC is", temperature_standard_deviation))
+
+# Analyze by month
+june <- london_data %>%
+  filter(month == "06")
+
+july <- london_data %>%
+  filter(month == "07")
+
+print(paste("The mean of TemperatureC in June  is", round(mean(june$TemperatureC), digits=2)))
+print(paste("The mean of TemperatureC in July is", round(mean(july$TemperatureC), digits=2)))
+
+print(paste("The standard deviation of TemperatureC in June is", sd(june$TemperatureC)))
+print(paste("The standard deviation of TemperatureC in July is", sd(july$TemperatureC)))
+
+# quick methode for mean and standard deviation
+# analyze by month
+monthly_stats <- london_data %>%
+  group_by(month) %>%
+  summarize(mean = mean(TemperatureC), standard_deviation = sd(TemperatureC))
+
+print(monthly_stats)
+
+# extra
+# analyze by humidity
+humidity_stats <
+```
