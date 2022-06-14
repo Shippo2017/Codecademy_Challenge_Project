@@ -59,5 +59,15 @@ print(monthly_stats)
 
 # extra
 # analyze by humidity
-humidity_stats <
+humidity_stats <- london_data %>%
+  group_by(month) %>%
+  summarize(mean = mean(Humidity), standard_deviation = sd(Humidity))
+
+print(humidity_stats)
+
+hour_stats <- london_data %>%
+  group_by(hour) %>%
+  summarize(variance = variance(Humidity))
+
+print(hour_stats)
 ```
