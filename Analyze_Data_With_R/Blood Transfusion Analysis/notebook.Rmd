@@ -1,0 +1,65 @@
+```{r error=TRUE}
+# load data
+load("vein_lifespans.Rda")
+load("artery_lifespans.Rda")
+```
+
+```{r error=TRUE}
+# view vein_lifespans here:
+vein_lifespans
+```
+
+```{r error=TRUE}
+# calculate vein_lifespans_mean here:
+vein_lifespans_mean <- mean(vein_lifespans)
+vein_lifespans_mean
+```
+
+```{r error=TRUE}
+# calculate vein_lifespans_sd here:
+vein_lifespans_sd <- sd(vein_lifespans)
+vein_lifespans_sd
+```
+
+```{r error=TRUE}
+# perform one sample t-test here:
+vein_pack_test <- t.test(vein_lifespans, mu = 71)
+vein_pack_test
+```
+
+```{r error=TRUE}
+hist(vein_lifespans)
+```
+
+```{r error=TRUE}
+# view artery_lifespans here:
+artery_lifespans
+```
+
+```{r error=TRUE}
+# calculate artery_lifespans_mean here:
+artery_lifespans_mean <- mean(artery_lifespans)
+artery_lifespans_mean
+```
+
+```{r error=TRUE}
+# calculate artery_lifespans_sd here:
+artery_lifespans_sd <- sd(artery_lifespans)
+artery_lifespans_sd
+```
+
+```{r error=TRUE}
+hist(artery_lifespans)
+```
+
+```{r}
+# define ratio
+ratio <- vein_lifespans_sd / artery_lifespans_sd
+ratio
+```
+
+```{r error=TRUE}
+# perform two sample t-test here:
+package_comparison_results <- t.test(vein_lifespans, artery_lifespans)
+package_comparison_results
+```
