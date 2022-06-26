@@ -1,0 +1,208 @@
+---
+title: "Explore Citi Bike Data"
+output: html_notebook
+---
+
+### Investigate the Data
+
+```{r}
+# Load the data set into a data frame
+all_data <- read.csv("january_trips_subset.csv")
+```
+
+```{r}
+# Investigate the data
+head(all_data)
+
+```
+
+```{r}
+# Install and load ggplot2 and dplyr
+library(ggplot2)
+library(dplyr)
+
+# Create a heatmap
+data_heatmap <- ggplot(all_data, aes(x=start.station.longitude, y=start.station.latitude)) + geom_bin2d(binwidth=c(0.001, 0.001))
+data_heatmap
+```
+
+
+### Modifying the Data Frame: Subset and Age
+
+```{r}
+# Create a subset of the data
+short_trips <- all_data %>% filter(tripduration < 900)
+head(short_trips)
+```
+
+```{r}
+# Add the age column
+short_trips <- short_trips %>% mutate(age = 2022 - birth.year)
+head(short_trips)
+
+```
+
+
+### Modifying the Data Frame: Distance
+
+```{r}
+# Use the geosphere library to create a distance column
+library(geosphere)
+
+starting_stations <- short_trips %>% select(start.station.longitude, start.station.latitude)
+ending_stations <- short_trips %>% select(end.station.longitude, end.station.latitude)
+
+short_trips <- short_trips %>% mutate(distance = distHaversine(starting_stations, ending_stations))
+head(short_trips)
+```
+
+
+### Modifying the Data Frame: Speed
+
+```{r}
+# Create the speed column
+short_trips <- short_trips %>% mutate(speed = distance / tripduration)
+head(short_trips$speed)
+```
+
+
+### Modifying the Data Frame: Average Speed by Age
+
+```{r}
+# Use group_by() and summarize() to get the mean speed of each age
+avg_speed_by_age <- short_trips %>% group_by(age) %>% summarize(mean_speed = mean(speed))
+head(avg_speed_by_age)
+
+```
+
+
+### Visualization!
+
+```{r}
+# Install and load ggplot2 to create a line graph of age and mean speed
+avg_speed_by_age_line <- ggplot(avg_speed_by_age, aes(x=age, y=mean_speed)) + geom_line()
+avg_speed_by_age_line
+```
+
+```{r}
+# Filter the data frame to only contain rows where the age is less than 80
+avg_speed_by_age <- avg_speed_by_age %>%  filter(age < 80)
+
+avg_speed_age_less_eighty_line <- ggplot(avg_speed_by_age, aes(x=age, y=mean_speed)) + geom_line()
+
+avg_speed_age_less_eighty_line
+```
+
+```{r}
+# Add a title and label the axes
+avg_speed_age_less_eighty_line <- 
+  ggplot(avg_speed_by_age, aes(x=age, y=mean_speed)) + geom_line() + 
+  labs(title = "Average speed of city bike Users by Age (Juni 2022)", x="Age", y="Average Speed") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+avg_speed_age_less_eighty_line
+```
+
+
+### Filtering By Gender
+
+```{r}
+# Use group_by() again to group by both age and gender
+average_speed_by_age_and_gender<- short_trips %>% group_by(age, gender) %>% summarize(mean_speed = mean(speed))
+
+head(average_speed_by_age_and_gender)
+```
+
+```{r}
+# Make a line graph of your new filtered data frame
+average_speed_by_age_and_gender <- average_speed_by_age_and_gender %>% filter(age < 80)
+
+average_speed_by_age_and_gender_line <- 
+  ggplot(average_speed_by_age_and_gender, aes(x=age, y=mean_speed, color = gender)) +
+  geom_line()
+
+average_speed_by_age_and_gender_line
+```
+
+
+```{r warning=FALSE}
+# Use mutate() and as.factor() to change the gender column into a factor.
+average_speed_by_age_and_gender <- 
+  average_speed_by_age_and_gender %>%
+  mutate(gender = as.factor(gender))
+
+head(average_speed_by_age_and_gender)
+
+average_speed_by_age_and_gender_line <-
+  ggplot(average_speed_by_age_and_gender, aes(x=age, y=mean_speed, color=gender)) +
+  geom_line() +
+  labs(
+    title = "Average speed of city bike Users by Age (Juni 2022) and Gender",
+    x="Age",
+    y="Average speed") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+average_speed_by_age_and_gender_line
+```
+
+```{r}
+# Filter the data frame to only include genders 1 and 2. Set appropriate labels for the legend
+average_speed_by_age_and_gender <- 
+  average_speed_by_age_and_gender %>% 
+  filter(age < 80, gender == 1 | gender == 2)
+
+average_speed_by_age_and_gender_line <-
+  ggplot(average_speed_by_age_and_gender, aes(x=age, y=mean_speed, color=gender)) +
+  geom_line() +
+  labs(
+    title = "Average speed of city bike Users by Age (Juni 2022) and Gender",
+    x="Age",
+    y="Average Speed (m/s)") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_discrete(
+    name = "Gender",
+    labels = c("Male Identifying", "Female Identifying"))
+
+average_speed_by_age_and_gender_line
+```
+
+
+### Making a Stacked Bar Plot Of Ages
+
+```{r}
+# Create the age_counts data frame
+age_counts <- short_trips %>% group_by(age, gender) %>% tally()
+
+head(age_counts)
+```
+
+```{r}
+# Create the stacked bar plot
+age_counts_stackbar <-
+  ggplot(age_counts, aes(x=age, y=n, fill = gender)) +
+  geom_col()
+
+age_counts_stackbar
+```
+
+```{r}
+# Filter and label your graph
+age_counts <- 
+  age_counts %>% 
+  mutate(gender = as.factor(gender)) %>%
+  filter(age < 100, gender == 1 | gender == 2)
+
+age_counts_stackbar <-
+  ggplot(age_counts, aes(x=age, y=n, fill = gender)) +
+  geom_col() +
+  labs(
+    title = "Distribution of Citi Bike users' age and gender",
+    x = "Age",
+    y = "Count") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_discrete(
+    name = "Gender",
+    labels = c("Male Identifying", "Female Identifying"))
+
+age_counts_stackbar
+```
