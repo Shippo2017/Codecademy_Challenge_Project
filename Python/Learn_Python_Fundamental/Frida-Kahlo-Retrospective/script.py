@@ -11,3 +11,9 @@ print(paintings)
 
 paintings_length = len(paintings)
 print(paintings_length)
+
+audio_tour_number = range(1, 8)
+print(list(audio_tour_number))
+
+master_list = list(zip(audio_tour_number, paintings))
+print(master_list)
